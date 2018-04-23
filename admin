@@ -1,0 +1,4 @@
+admin
+
+- deleteUser(userID)
+- addUser(plainTextName, userID, interests)

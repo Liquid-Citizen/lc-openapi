@@ -1,0 +1,8 @@
+userAccount
+
+ - persona/plainTextName
+ - anonToken/userID
+ - interests: [] of contexts
+
+ - addInterest(context)
+ - removeInterest(context)

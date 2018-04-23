@@ -1,0 +1,37 @@
+proposition (opts durch konfiguration):
+
+ - name
+ - description
+ - options
+ - last modification
+ - status/phase: INITIATION/DISCUSSION/VOTE
+ - primaryContext
+ - secondaryContexts
+ - voting mechanism (optional)
+ - initiation phase length (opt)
+ - discussion phase length (opt)
+ - voting phase length (opt)
+
+ operations:
+ - supportInitiation (propGroupID)
+ - supportDiscussion (propGroup)
+ - getPropositionStatus(propID) : String
+ - writeDiscussionEntry (propID, entry)
+ - getDiscussionEntries (propID) : [] of entries
+ - modifyProposition (JSONoperation)
+
+
+ discussionEntry:
+  - propID
+  - entryText
+  - datePosted
+
+
+prop service conf:
+ - voting mechanism (optional)
+ - initiation phase length (opt)
+ - discussion phase length (opt)
+ - voting phase length (opt)
+ - initiationThreshold
+ - discussionThreshold
+ - overWriteFlag
