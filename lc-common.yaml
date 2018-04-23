@@ -29,3 +29,12 @@ components:
       type: string
       format: byte
       description: AES secret
+  parameters:
+    propId:
+      name: propositionId
+      in: path
+      description: ID of the respective proposition
+      required: true
+      schema:
+        type: string
+        format: uuid
