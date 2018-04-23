@@ -1,0 +1,148 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: 'Liquid Citizen VDS'
+  description: 'Vote Delegation Service'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - description
+      properties:
+        code:
+          type: number
+          example: 0
+        description:
+          type: string
+          description: error description
+    Token:
+      type: string
+      format: uuid
+      example: d290f1ee-6c54-4b01-90e6-d701748f0851
+    OTS:
+      type: string
+      format: byte
+      description: RSA key
+    POO:
+      type: string
+      format: byte
+      description: AES secret
+    DelegationTokenRequest:
+      type: object
+      required:
+        - userId
+        - OTS
+      properties:
+        userId:
+          type: number
+          example: 46823946295
+        OTS:
+          $ref: "#/components/schemas/OTS"
+    DelegationTokenResponse:
+      type: object
+      required:
+        - DT
+        - POO
+      properties:
+        DT:
+          $ref: "/lc-common.yaml/components/schemas/Token"
+        POO:
+          $ref: "#/components/schemas/POO"
+    EvaluateDelegationTokenRequest:
+      type: object
+      required:
+        - DT
+        - SLO
+      properties:
+        userId:
+          type: number
+          example: 46823946295
+        OTS:
+          $ref: "#/components/schemas/OTS"
+    EvaluateDelegationTokenResponse:
+      type: object
+      required:
+        - DT
+        - POO
+      properties:
+        DT:
+          $ref: "#/components/schemas/Token"
+        POO:
+          $ref: "#/components/schemas/POO"
+  parameters:
+    propId:
+      name: propositionId
+      in: path
+      description: ID of the proposition to vote for
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    error:
+      description: all errors
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+paths:
+  /createDelegationToken/{propositionId}:
+    post:
+      summary: Creates a delegation token
+      operationId: registerForVote
+      description: |
+        Creates an entry in the proposition table corresponding to the propositionID, associating the userID, delegationToken and a VDSpoo (VDS delegation token proof-of-ownership) and returns the respective pair.
+      parameters:
+      - $ref: '#/components/parameters/propId'
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DelegationTokenRequest'
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelegationTokenResponse'
+        '400':
+          $ref: '#/components/responses/error'
+  /evaluateDelegationToken/{propositionId}:
+    post:
+      summary: Prepares evaluation of delegation token
+      operationId: registerForVote
+      description: |
+        Operation that prepares the evaluation of a delegation token for the respective proposition. Will create a token based on the SLO in order to determine the value of the vote (votes delegated to the user with this DT). Also decrypts the SLO to the corresponding FLO based on the VDSpoo associated with the delegationToken.
+        Returns the pair (FLO, vpt) with the optionToken encrypted by the VASpoo (as the SLO decrypted by the VDSpoo) and the votePowerToken used to evaluate the voting power of the delegationToken.
+        The value of the vote (vpt) is determined by deriving the number of users delegating the voting power to the user associated with the delegationToken for the given proposition (either directly as a delegation for the proposition, or of a context / supercontext of the proposition, if no other exists) at the time of vote closing, as long as they didn't possess a valid delegationToken for this proposition.
+      parameters:
+      - $ref: '#/components/parameters/propId'
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateDelegationTokenRequest'
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateDelegationTokenResponse'
+        '400':
+          description: all errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/LiquidCitizen/lc-vds/1.0.0

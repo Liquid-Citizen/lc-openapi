@@ -1,0 +1,31 @@
+info:
+  description: "Common defintions for all Liquid Citizen APIs"
+  version: '1.0.0'
+  title: Liquid Citizen Common
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - description
+      properties:
+        code:
+          type: number
+          example: 0
+        description:
+          type: string
+          description: error description
+    Token:
+      type: string
+      format: uuid
+      example: d290f1ee-6c54-4b01-90e6-d701748f0851
+    OTS:
+      type: string
+      format: byte
+      description: RSA key
+    POO:
+      type: string
+      format: byte
+      description: AES secret
