@@ -20,70 +20,209 @@ paths:
       operationId: createProposition
       description: |
         Creates a new proposition according to the parameters transmitted, as well as the proposition group alternative propositions to the newly created proposition will belong to.
-      parameters:
-      - name: propositionId
-        in: path
-        description: ID of the proposition to vote for
-        required: true
-        schema:
-          type: string
-          format: uuid
       requestBody:
-        description: Optional description in *Markdown*
+        description: The request body contains all the relevant information to create a new proposition (group), i.e. its name description, the voting options and the primary context as required parameters, and the secondaryContexts, voting mechanism, initiation phase length, discussion phase length and voting phase length as optional parameters
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VoteTokenRequest'
+              $ref: '#/components/schemas/NewProposition'
       responses:
         '200':
-          description: search results matching criteria
+          description: The newly created proposition
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoteTokenResponse'
+                $ref: '#/components/schemas/Proposition'
         '400':
           description: all errors
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /evaluateVote/{propositionId}:
+  /supportInitiation/{propositionID}:
     post:
-      summary: Prepares vote counting
-      operationId: evaluateVote
+      summary: Sets support for the respective proposition group
+      operationId: supportInitiation
       description: |
-        Prepares a vote for a given proposition for vote counting by determining the optionToken and votePowerToken, so the calling entity can determine the semantics of the vote within the vote counting
+        Sets the requesting user as a supporter for the proposition group that the proposition belongs to (if not already set)
       parameters:
-      - name: propositionId
-        in: path
-        description: ID of the proposition to vote for
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        description: Optional description in *Markdown*
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EvaluateVoteRequest'
+      - $ref: "#/components/parameters/propositionID"
       responses:
         '200':
-          description: search results matching criteria
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluateVoteResponse'
+          description: proposition group successfully supported
         '400':
-          description: all errors
+          description: proposition doesn't exist, is not in initiation phase or is already supported
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
+  /supportDiscussion/{propositionID}:
+    post:
+      summary: Sets support for the respective proposition in discussion phase
+      operationId: supportDiscussion
+      description: |
+        Sets the requesting user as a supporter for the proposition in the discussion phase
+      parameters:
+        - $ref: "#/components/parameters/propositionID"
+      responses:
+        '200':
+          description: proposition successfully supported
+        '400':
+          description: proposition doesn't exist, is not in discussion phase or is already supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /getPropositionGroup/{propositionID}:
+    post:
+      summary: Returns the propositionGroup the respective proposition is part of 
+      operationId: getPropositionGroup
+      description: |
+        Returns the propositionGroup the respective proposition is part of as a json-object of type PropositionGroup (see schemas)
+      parameters:
+        - $ref: "#/components/parameters/propositionID"
+      responses:
+        '200':
+          description: proposition group successfully extracted
+          content:  
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropositionGroup"
+        '400':
+          description: proposition doesn't exist, is not in discussion phase or is already supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'              
+  /getPropositionInformation/{propositionId}:
+    post:
+      summary: requests information about the proposition
+      operationId: getPropositionInformation
+      description: |
+        Returns the proposition object with the relevant information about the proposition
+      parameters:
+      - name: propositionId
+        in: path
+        description: ID of a proposition to request information about
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: proposition group successfully supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposition'
+        '400':
+          description: proposition doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /writeDiscussionEntry/{propositionID}:
+    post:
+      summary: Creates a new discussion entry by the poster for the respective proposition
+      operationId: writeDiscussionEntry
+      parameters: 
+        - $ref: "#/components/parameters/propositionID"
+      responses:
+        '200':
+          description: entry successfully written
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: uuid
+                description: the entryID of this discussion entry
+        '400':
+          description: proposition doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'      
+  /getDiscussionEntries/{propositionID}:
+    post:
+      summary: Returns all discussion entries belonging to the respective proposition (if exists)
+      operationId: getDiscussionEntries
+      parameters:
+        - $ref: "#/components/parameters/propositionID"
+      responses:
+        '200':
+          description: entry successfully written
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/DiscussionEntry'
+                description: The array of the discussion entries for the respective proposition
+        '400':
+          description: proposition doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'     
+  /modifyProposition/{propositionID}:
+    post:
+      summary: changes attributes of the proposition, if permissable
+      operationId: modifyProposition
+      parameters:
+        - $ref: "#/components/parameters/propositionID"
+      requestBody:
+        description: The request body contains all the relevant information to modify within the proposition
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropositionModificationRequest' 
+      responses:
+        '200':
+          description: Proposition successfully modified
+        '400':
+          description: proposition doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /signVote/{propositionID}:
+    post:
+      summary: Verifies the vote casting by attaching a signed timestamp to the vote if casted on time
+      operationID: signVote
+      parameters: 
+        $ref: "#/components/parameters/propositionID"
+      requestBody:
+        description: The (raw) vote to sign with the respective time stamp
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RawVote"
+      responses:
+        '200':
+          description: Vote successfully signed (verifies timely vote casting)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignedVote"
+        '400':
+          description: vote can't be signed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'        
 components:
+  parameters:
+    propositionID:
+      name: propositionID
+      in: path
+      description: ID of a proposition to modify
+      required: true
+      schema:
+        type: string
+        format: uuid
   schemas:
     ErrorResponse:
       type: object
@@ -97,60 +236,136 @@ components:
         description:
           type: string
           description: error description
-    VoteTokenRequest:
+    PropositionGroup:
+      type: array
+      items:
+        type: object
+        properties:
+          $ref: "#/components/schemas/Proposition"
+      description: An array of all propositions belonging to this proposition group
+    Proposition:
+      type: object
+      properties:
+          name:
+            type: string
+          description:
+            type: string
+          options:
+            type: array
+            items: 
+              type: string
+          primaryContext:
+            type: string
+            format: uuid
+          secondaryContexts:
+            type: array
+            items:
+              type: string
+          votingMechanism:
+            type: string
+            format: uuid
+          initiationPhaseLength:
+            type: integer
+          discussionPhaseLength:
+            type: integer
+          votingPhaseLength:
+            type: integer
+    NewProposition:
       type: object
       required:
-        - DT
-        - OTS
+       - name
+       - description
+       - options
+       - primaryContext
       properties:
-        DT:
+        name:
+          type: string
+        description:
+          type: string
+        options:
+          type: array
+        primaryContext:
           type: string
           format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-        OTS:
-          type: string
-          format: byte
-          description: RSA key
-    VoteTokenResponse:
-      type: object
-      required:
-        - DT
-        - OTS
-      properties:
-        VT:
+        secondaryContexts:
+          type: array
+        votingMechanism:
           type: string
           format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-        POO:
-          type: string
-          format: byte
-          description: AES secret
-    EvaluateVoteRequest:
+        initiationPhaseLength:
+          type: integer
+        discussionPhaseLength:
+          type: integer
+        votingPhaseLength:
+          type: integer
+    DiscussionEntry:
       type: object
       required:
-        - VT
+        - payload
+        - dateTimeCreated
+        - entryID
+      properties:
+        payload:
+          type: string
+        dateTimeCreated:
+          type: string
+          format: date-time
+        responseTo:
+          type: string
+          description: The ID of the DiscussionEntry this one responds to (if exists)
+        entryID:
+          type: string
+          format: uuid
+    PropositionModificationRequest:
+      type: object
+      properties:
+        description:
+          type: string
+        options:
+          type: array
+          items: 
+            type: string
+        secondaryContexts:
+          type: array
+          items: 
+            type: string
+        votingMechanism:
+          type: string
+        initiationPhaseLength:
+          type: integer
+        discussionPhaseLength:
+          type: integer
+        votingPhaseLength:
+          type: integer
+    RawVote:
+      type: object
+      description: The vote as casted by a voter; Complete in vote details, but timely vote casting not yet verified
+      required:
         - SLO
+        - voteToken
+        - propositionID
       properties:
-        VT:
-          type: string
-          format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
         SLO:
           type: string
-          format: byte
-          description: Second layer option token
-    EvaluateVoteResponse:
-      type: object
-      required:
-        - O
-        - VPT
-      properties:
-        O:
-          type: string
-          format: byte
-          description: Option token
-        VPT:
+          format: uuid
+          description: A second-layer-option (i.e. a valid optionToken, encrypted by a VDSpoo, encrypted by a VASpoo)
+        voteToken: 
           type: string
           format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-          description: Vote power token
+          description: A valid voteToken (see lc-vas)
+        propositionID:
+          description: ID of a the proposition voted on
+          type: string
+          format: uuid
+    SignedVote:   
+      type: object
+      required:
+        - RawVote
+        - timeCasted
+      properties:
+        RawVote:
+          $ref: "#/components/schemas/RawVote"
+        timeCasted:
+          type: string
+          format: date-time
+          description: The signed time stamp of vote casting time verification
