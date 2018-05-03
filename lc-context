@@ -1,0 +1,108 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: 'LiquidCitizen'
+  description: 'The lc-context API is the API for the context service of LiquidCitizen. This service holds and administrates the context taxonomy for the propositions'
+paths: 
+  /getSubContexts/{context}:
+    post:
+      description: Returns all the subcontexts of the respective context
+      parameters: 
+        - $ref: "#/components/parameters/context"
+      responses:
+        '200':
+          description: context successfully derived
+          content:
+            text/plain:
+              schema:
+                type: array
+                items: string
+                description: An array of subcontexts of the respective context (potentially empty)
+        '400':
+          description: context doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'    
+  /getSuperContexts/{context}:
+    post:
+      description: Returns all the supercontexts of the respective context
+      parameters: 
+        - $ref: "#/components/parameters/context"
+      responses:
+        '200':
+          description: context successfully derived
+          context:
+            text/plain:
+              type: array
+              item: string
+              description: An array of supercontexts of the respective context (potentially empty)
+        '400':
+          description: context doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'  
+  /getTaxonomy:
+    post:
+      description: Returns the taxonomy as an object of all possible contexts and their respective super- and subcontexts 
+      responses:
+        '200':
+          description: object describing the taxonomy
+          context:
+            application/json:
+              type: array
+              items:
+                type: 
+                  $ref: '#/components/schemas/TaxonomyEntry'
+              description: An array of the taxonomy entries, giving the sub- and supercontexts
+        '400':
+          description: An error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'    
+components:
+  parameters:
+    context:
+      name: context
+      in: path
+      description: A context within the database
+      required: true
+      schema:
+        type: string
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - description
+      properties:
+        code:
+          type: number
+          example: 0
+        description:
+          type: string
+          description: error description      
+    TaxonomyEntry:
+      type: object
+      required:
+        - name
+        - subcontexts
+        - supercontexts
+      properties:
+        name:
+          type: string
+          description: The name / identifier of the context
+        subcontexts:
+          type: array
+          items: string
+          description: Array of all subcontexts of the respective context
+        supercontexts:
+          type: array
+          items: string
+          description: Array of all supercontexts of the respective context  
+# Added by API Auto Mocking Plugin
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/LiquidCitizen/lc-context/1.0
