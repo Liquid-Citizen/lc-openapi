@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  description: The User Service in the Liquid Citizen Project
+  version: 1.0.0
+  title: User Service
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+paths:
+  /interest/:
+    post:
+      operationId: addInterest
+      summary: add a context to a users interests
+      description: |
+        add a context to a users interests
+      requestBody:
+        description: userId and contextId to add
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrRemoveInterestRequest'
+      responses:
+        '200':
+          description: empty response signaling success
+        '400':
+          $ref: './lc-common.yaml#/components/responses/error'
+    delete:
+      operationId: removeInterest
+      summary: remove a context from a users interests
+      description: |
+        remove a context from a users interests
+      requestBody:
+        description: userId and contextId to remove
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrRemoveInterestRequest'
+      responses:
+        '200':
+          description: empty response signaling success
+        '400':
+          $ref: './lc-common.yaml#/components/responses/error'
+components:
+  schemas:
+    AddOrRemoveInterestRequest:
+      type: object
+      required:
+        - userId
+        - contextId
+      properties:
+        userId:
+          $ref: './lc-common.yaml#/components/schemas/UserId'
+        contextId:
+          $ref: './lc-common.yaml#/components/schemas/ContextId'

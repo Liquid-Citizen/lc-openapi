@@ -21,6 +21,10 @@ components:
       type: string
       format: uuid
       example: d290f1ee-6c54-4b01-90e6-d701748f0851
+    HashedToken:
+      type: string
+      format: byte
+      description: Token encrypted with AES secret
     OTS:
       type: string
       format: byte
@@ -29,6 +33,21 @@ components:
       type: string
       format: byte
       description: AES secret
+    OT:
+      type: string
+      format: byte
+      description: option token
+    FLO:
+      type: string
+      format: byte
+      description: first layer option token
+    SLO:
+      type: string
+      format: byte
+      description: second layer option token
+    UserId:
+      type: number
+      example: 46823946295
   parameters:
     propId:
       name: propositionId
@@ -38,3 +57,10 @@ components:
       schema:
         type: string
         format: uuid
+  responses:
+    error:
+      description: all errors
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

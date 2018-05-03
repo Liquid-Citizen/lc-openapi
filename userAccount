@@ -6,3 +6,4 @@ userAccount
 
  - addInterest(context)
  - removeInterest(context)
+ - getInterests(userId)

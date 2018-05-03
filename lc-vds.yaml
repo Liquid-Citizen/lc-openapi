@@ -5,30 +5,6 @@ info:
   description: 'Vote Delegation Service'
 components:
   schemas:
-    ErrorResponse:
-      type: object
-      required:
-        - code
-        - description
-      properties:
-        code:
-          type: number
-          example: 0
-        description:
-          type: string
-          description: error description
-    Token:
-      type: string
-      format: uuid
-      example: d290f1ee-6c54-4b01-90e6-d701748f0851
-    OTS:
-      type: string
-      format: byte
-      description: RSA key
-    POO:
-      type: string
-      format: byte
-      description: AES secret
     DelegationTokenRequest:
       type: object
       required:
@@ -36,10 +12,9 @@ components:
         - OTS
       properties:
         userId:
-          type: number
-          example: 46823946295
+          $ref: './lc-common.yaml#/components/schemas/UserId'
         OTS:
-          $ref: "#/components/schemas/OTS"
+          $ref: './lc-common.yaml#/components/schemas/OTS'
     DelegationTokenResponse:
       type: object
       required:
@@ -47,20 +22,19 @@ components:
         - POO
       properties:
         DT:
-          $ref: "/lc-common.yaml/components/schemas/Token"
+          $ref: './lc-common.yaml#/components/schemas/Token'
         POO:
-          $ref: "#/components/schemas/POO"
+          $ref: './lc-common.yaml#/components/schemas/POO'
     EvaluateDelegationTokenRequest:
       type: object
       required:
         - DT
         - SLO
       properties:
-        userId:
-          type: number
-          example: 46823946295
-        OTS:
-          $ref: "#/components/schemas/OTS"
+        DT:
+          $ref: './lc-common.yaml#/components/schemas/Token'
+        SLO:
+          $ref: './lc-common.yaml#/components/schemas/HashedToken'
     EvaluateDelegationTokenResponse:
       type: object
       required:
@@ -68,26 +42,9 @@ components:
         - POO
       properties:
         DT:
-          $ref: "#/components/schemas/Token"
+          $ref: './lc-common.yaml#/components/schemas/Token'
         POO:
-          $ref: "#/components/schemas/POO"
-  parameters:
-    propId:
-      name: propositionId
-      in: path
-      description: ID of the proposition to vote for
-      required: true
-      schema:
-        type: string
-        format: uuid
-  responses:
-    error:
-      description: all errors
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-
+          $ref: './lc-common.yaml#/components/schemas/POO'
 paths:
   /createDelegationToken/{propositionId}:
     post:
@@ -96,7 +53,7 @@ paths:
       description: |
         Creates an entry in the proposition table corresponding to the propositionID, associating the userID, delegationToken and a VDSpoo (VDS delegation token proof-of-ownership) and returns the respective pair.
       parameters:
-      - $ref: '#/components/parameters/propId'
+      - $ref: './lc-common.yaml#/components/parameters/propId'
       requestBody:
         description: Optional description in *Markdown*
         required: true
@@ -112,7 +69,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DelegationTokenResponse'
         '400':
-          $ref: '#/components/responses/error'
+          $ref: './lc-common.yaml#/components/responses/error'
   /evaluateDelegationToken/{propositionId}:
     post:
       summary: Prepares evaluation of delegation token
@@ -122,7 +79,7 @@ paths:
         Returns the pair (FLO, vpt) with the optionToken encrypted by the VASpoo (as the SLO decrypted by the VDSpoo) and the votePowerToken used to evaluate the voting power of the delegationToken.
         The value of the vote (vpt) is determined by deriving the number of users delegating the voting power to the user associated with the delegationToken for the given proposition (either directly as a delegation for the proposition, or of a context / supercontext of the proposition, if no other exists) at the time of vote closing, as long as they didn't possess a valid delegationToken for this proposition.
       parameters:
-      - $ref: '#/components/parameters/propId'
+      - $ref: './lc-common.yaml#/components/parameters/propId'
       requestBody:
         description: Optional description in *Markdown*
         required: true
@@ -138,11 +95,4 @@ paths:
               schema:
                 $ref: '#/components/schemas/EvaluateDelegationTokenResponse'
         '400':
-          description: all errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-servers:
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/LiquidCitizen/lc-vds/1.0.0
+          $ref: './lc-common.yaml#/components/responses/error'

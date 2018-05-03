@@ -1,6 +1,4 @@
 openapi: 3.0.0
-servers:
-  - url: 'https://virtserver.swaggerhub.com/LiquidCitizen/lc-vas/1.0.0'
 info:
   description: The VAS in the Liquid Citizen Project
   version: 1.0.0
@@ -10,6 +8,48 @@ info:
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+components:
+  schemas:
+    VoteTokenRequest:
+      type: object
+      required:
+        - DT
+        - OTS
+      properties:
+        DT:
+          $ref: './lc-common.yaml#/components/schemas/Token'
+        OTS:
+          $ref: './lc-common.yaml#/components/schemas/OTS'
+    VoteTokenResponse:
+      type: object
+      required:
+        - DT
+        - OTS
+      properties:
+        VT:
+          $ref: './lc-common.yaml#/components/schemas/Token'
+        POO:
+          $ref: './lc-common.yaml#/components/schemas/POO'
+    EvaluateVoteRequest:
+      type: object
+      required:
+        - VT
+        - SLO
+      properties:
+        VT:
+          $ref: './lc-common.yaml#/components/schemas/Token'
+        SLO:
+          $ref: './lc-common.yaml#/components/schemas/HashedToken'
+    EvaluateVoteResponse:
+      type: object
+      required:
+        - OT
+        - VPT
+      properties:
+        OT:
+          $ref: './lc-common.yaml#/components/schemas/Token'
+        VPT:
+          $ref: './lc-common.yaml#/components/schemas/Token'
 paths:
   /registerForVote/{propositionId}:
     post:
@@ -18,13 +58,7 @@ paths:
       description: |
         Issues a vote token together with a POO
       parameters:
-      - name: propositionId
-        in: path
-        description: ID of the proposition to vote for
-        required: true
-        schema:
-          type: string
-          format: uuid
+      - $ref: './lc-common.yaml#/components/parameters/propId'
       requestBody:
         description: Optional description in *Markdown*
         required: true
@@ -40,11 +74,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VoteTokenResponse'
         '400':
-          description: all errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: './lc-common.yaml#/components/responses/error'
   /evaluateVote/{propositionId}:
     post:
       summary: Prepares vote counting
@@ -52,13 +82,7 @@ paths:
       description: |
         Prepares a vote for a given proposition for vote counting by determining the optionToken and votePowerToken, so the calling entity can determine the semantics of the vote within the vote counting
       parameters:
-      - name: propositionId
-        in: path
-        description: ID of the proposition to vote for
-        required: true
-        schema:
-          type: string
-          format: uuid
+      $ref: './lc-common.yaml#/components/parameters/propId'
       requestBody:
         description: Optional description in *Markdown*
         required: true
@@ -74,80 +98,4 @@ paths:
               schema:
                 $ref: '#/components/schemas/EvaluateVoteResponse'
         '400':
-          description: all errors
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-components:
-  schemas:
-    ErrorResponse:
-      type: object
-      required:
-        - code
-        - description
-      properties:
-        code:
-          type: number
-          example: 0
-        description:
-          type: string
-          description: error description
-    VoteTokenRequest:
-      type: object
-      required:
-        - DT
-        - OTS
-      properties:
-        DT:
-          type: string
-          format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-        OTS:
-          type: string
-          format: byte
-          description: RSA key
-    VoteTokenResponse:
-      type: object
-      required:
-        - DT
-        - OTS
-      properties:
-        VT:
-          type: string
-          format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-        POO:
-          type: string
-          format: byte
-          description: AES secret
-    EvaluateVoteRequest:
-      type: object
-      required:
-        - VT
-        - SLO
-      properties:
-        VT:
-          type: string
-          format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-        SLO:
-          type: string
-          format: byte
-          description: Second layer option token
-    EvaluateVoteResponse:
-      type: object
-      required:
-        - O
-        - VPT
-      properties:
-        O:
-          type: string
-          format: byte
-          description: Option token
-        VPT:
-          type: string
-          format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-          description: Vote power token
+          $ref: './lc-common.yaml#/components/responses/error'
